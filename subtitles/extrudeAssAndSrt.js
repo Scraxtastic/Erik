@@ -35,7 +35,7 @@ const createAssTemplate = (folder, fileName, templatePath) => {
       templatePart = templatePart.slice(end + 1, templatePart.length - 1);
     }
     const template = templatePart.split("\\N").map((_, index) => `{${index}}`);
-    parts.push(templatePrefix + template);
+    parts.push(templatePrefix + template.join("\\N"));
     return parts.join(",");
   });
   fs.writeFileSync(templatePath, templatedLines.join("\r\n"), {
