@@ -42,6 +42,7 @@ const createAssTemplate = (folder, fileName, templatePath) => {
     encoding: "utf8",
     flag: "w",
   });
+  console.log("Created ass template for " + fileName);
 };
 
 /**
@@ -85,6 +86,34 @@ const extrudeAss = (folder, fileName, destinationPath) => {
 };
 
 /**
+ * Creates a template for the .srt files
+ * @param {input folder} folder
+ * @param {fileName} fileName
+ * @param {template / destination Path} templatePath
+ */
+const createSrtTemplate = (folder, fileName, templatePath) => {
+  const fileText = fs.readFileSync(folder + fileName, { encoding: "utf-8" });
+  const parts = fileText.split("\r\n\r\n");
+  const templateParts = parts.map((part) => {
+    const subParts = part.split("\r\n");
+    return subParts
+      .map((subPart, index) => {
+        if (index < 2) {
+          return subPart;
+        }
+        return `{${index - 2}}`;
+      })
+      .join("\r\n");
+  });
+  const templateText = templateParts.join("\r\n\r\n");
+  fs.writeFileSync(templatePath, templateText, {
+    encoding: "utf8",
+    flag: "w",
+  });
+  console.log("Created srt template for " + fileName);
+};
+
+/**
  * extrudes the .str file texts for translation
  * @param {input folder} folder
  * @param {fileName} fileName
@@ -94,13 +123,13 @@ const extrudeSrt = (folder, fileName, destinationPath) => {
   console.log("Starting extrude", "srt", fileName);
   const fileText = fs.readFileSync(folder + fileName, { encoding: "utf-8" });
 
-  const parts = fileText.replaceAll("\r", "").split("\n\n");
+  const parts = fileText.split("\r\n\r\n");
   const extrudedParts = parts.map((part) => {
-    const lines = part.split("\n");
+    const lines = part.split("\r\n");
     const filteredLines = lines.filter((_, index) => {
       return index >= 2;
     });
-    return filteredLines.join("\n");
+    return filteredLines.join("\r\n");
   });
 
   fs.writeFileSync(destinationPath, extrudedParts.join("\n\n"), {
@@ -132,5 +161,6 @@ assFiles.forEach((fileName) => {
   extrudeAss("./input/", fileName, `./assExtruded/${fileName}_ex`);
 });
 srtFiles.forEach((fileName) => {
+  createSrtTemplate("./input/", fileName, `./template/${fileName}`);
   extrudeSrt("./input/", fileName, `./srtExtruded/${fileName}_ex`);
 });
